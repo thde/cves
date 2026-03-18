@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>cves: CVE RSS Bridge</title>
+        <style>
+            *,
+            *::before,
+            *::after {
+                box-sizing: border-box;
+            }
+            body {
+                font-family:
+                    ui-monospace, "SFMono-Regular", Menlo, Monaco, Consolas,
+                    monospace;
+                max-width: 720px;
+                margin: 60px auto;
+                padding: 0 24px;
+                color: #1a1a1a;
+                background: #fff;
+                line-height: 1.6;
+            }
+            h1 {
+                font-size: 1.25rem;
+                margin-bottom: 4px;
+            }
+            h2 {
+                font-size: 0.95rem;
+                color: #555;
+                margin-top: 32px;
+                margin-bottom: 12px;
+                text-transform: uppercase;
+                letter-spacing: 0.05em;
+            }
+            p {
+                color: #444;
+                font-size: 0.9rem;
+                margin-top: 4px;
+            }
+            table {
+                width: 100%;
+                border-collapse: collapse;
+                font-size: 0.875rem;
+            }
+            th {
+                text-align: left;
+                padding: 6px 12px;
+                color: #666;
+                font-weight: 500;
+                border-bottom: 1px solid #e5e5e5;
+            }
+            td {
+                padding: 8px 12px;
+                border-bottom: 1px solid #f0f0f0;
+            }
+            td:first-child {
+                color: #0550ae;
+                font-weight: 600;
+            }
+            code {
+                background: #f6f6f6;
+                padding: 2px 6px;
+                border-radius: 4px;
+                font-size: 0.875rem;
+            }
+            .example {
+                color: #555;
+                font-size: 0.875rem;
+                margin-top: 16px;
+            }
+        </style>
+    </head>
+    <body>
+        <h1>cves: CVE RSS Bridge</h1>
+        <p>GitHub Security Advisory feeds for your RSS reader.</p>
+
+        <h2>Endpoints</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Method</th>
+                    <th>Pattern</th>
+                </tr>
+            </thead>
+            <tbody>
+                {{range .Routes}}
+                <tr>
+                    <td>{{.Method}}</td>
+                    <td><code>{{.Pattern}}</code></td>
+                </tr>
+                {{end}}
+            </tbody>
+        </table>
+
+        <h2>Usage</h2>
+        <p class="example">
+            Subscribe to <code>/v1/github/{owner}/{repo}</code> in your RSS
+            reader to receive published security advisories for any GitHub
+            repository.
+        </p>
+        <p class="example">
+            Example:
+            <a href="/v1/github/argoproj/argo-cd"
+                ><code>/v1/github/argoproj/argo-cd</code></a
+            >
+        </p>
+
+        <h2>Build</h2>
+        <table>
+            <tbody>
+                <tr>
+                    <td>Version</td>
+                    <td>{{.BuildInfo.Version}}</td>
+                </tr>
+                <tr>
+                    <td>Go Version</td>
+                    <td>{{.BuildInfo.GoVersion}}</td>
+                </tr>
+                <tr>
+                    <td>Commit</td>
+                    <td>{{.BuildInfo.Commit}}</td>
+                </tr>
+                <tr>
+                    <td>Date</td>
+                    <td>{{.BuildInfo.Date}}</td>
+                </tr>
+            </tbody>
+        </table>
+    </body>
+</html>

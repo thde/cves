@@ -1,0 +1,4 @@
+# :schema https://raw.githubusercontent.com/crate-ci/typos/refs/heads/master/config.schema.json
+
+[files]
+extend-exclude = ["go.mod", "go.sum"]

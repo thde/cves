@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>{{.Owner}}/{{.Repo}} — Security Advisories</title>
+	<style>
+		*, *::before, *::after { box-sizing: border-box; }
+		body { font-family: ui-monospace, "SFMono-Regular", Menlo, Monaco, Consolas, monospace; max-width: 860px; margin: 2rem auto; padding: 0 1rem; color: #1a1a1a; line-height: 1.5; }
+		h1 { font-size: 1.25rem; margin-bottom: 1.5rem; }
+		h1 a { color: inherit; text-decoration: none; }
+		h1 a:hover { text-decoration: underline; }
+		details.advisory { border: 1px solid #e1e4e8; border-radius: 6px; padding: 0.75rem 1.25rem; margin-bottom: 0.75rem; }
+		details.advisory[open] { padding-bottom: 1rem; }
+		summary { list-style: none; cursor: pointer; display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem; }
+		summary::-webkit-details-marker { display: none; }
+		summary::after { content: "▸"; flex-shrink: 0; color: #888; font-size: 1.1rem; margin-top: 0.1rem; transition: transform 0.15s; }
+		details[open] > summary::after { transform: rotate(90deg); }
+		.advisory-title { font-size: 0.95rem; font-weight: 600; margin: 0 0 0.3rem; }
+		.advisory-title a { color: #0969da; text-decoration: none; }
+		.advisory-title a:hover { text-decoration: underline; }
+		.badges { display: flex; flex-wrap: wrap; gap: 0.3rem; margin-bottom: 0.3rem; }
+		.badge { font-size: 0.7rem; font-weight: 700; padding: 0.15em 0.55em; border-radius: 2em; white-space: nowrap; text-transform: uppercase; text-decoration: none; }
+		.badge-critical { background: #ffdcd7; color: #82071e; }
+		.badge-high     { background: #ffe4c4; color: #7d2a00; }
+		.badge-medium   { background: #fff3cd; color: #6a4200; }
+		.badge-low      { background: #dcffe4; color: #1a4a1a; }
+		.badge-unknown  { background: #f0f0f0; color: #555; }
+		.meta { font-size: 0.78rem; color: #656d76; }
+		.versions { margin-top: 0.75rem; font-size: 0.82rem; }
+		.versions table { border-collapse: collapse; }
+		.versions th { text-align: left; padding: 0.25rem 0.75rem 0.25rem 0; color: #444; font-weight: 600; border-bottom: 1px solid #e1e4e8; }
+		.versions td { padding: 0.25rem 0.75rem 0.25rem 0; color: #444; border-bottom: 1px solid #f0f0f0; }
+		.versions td:first-child { color: #1a1a1a; }
+		.description { font-size: 0.875rem; color: #444; margin-top: 0.75rem; }
+		.description p { margin: 0.4rem 0; }
+		.description pre { background: #f6f6f8; border-radius: 4px; padding: 0.6em 0.8em; overflow-x: auto; }
+		.description code { background: #f6f6f8; padding: 0.1em 0.35em; border-radius: 3px; font-size: 0.85em; }
+		.description pre code { background: none; padding: 0; }
+		.empty { color: #666; }
+		.filters { margin-bottom: 1.5rem; }
+		.filters form { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 0.75rem; }
+		.filters input, .filters select { font: inherit; font-size: 0.875rem; padding: 0.3em 0.6em; border: 1px solid #ccc; border-radius: 4px; }
+		.filters input { width: 12rem; }
+		.filters button { font: inherit; font-size: 0.875rem; padding: 0.3em 0.75em; border: 1px solid #ccc; border-radius: 4px; background: #f6f6f8; cursor: pointer; }
+		.filters button:hover { background: #e8e8ec; }
+		.filters a.clear { font-size: 0.8rem; color: #666; }
+		.params { font-size: 0.8rem; color: #656d76; }
+		.params dt { font-weight: 600; color: #1a1a1a; margin-top: 0.4rem; }
+		.params dd { margin: 0 0 0 1rem; }
+	</style>
+</head>
+<body>
+	<h1><a href="https://github.com/{{.Owner}}/{{.Repo}}">{{.Owner}}/{{.Repo}}</a> Security Advisories</h1>
+	<div class="filters">
+		<form method="get">
+			<label for="v">Version</label>
+			<input id="v" name="v" type="text" value="{{.VersionFilter}}" placeholder="e.g. 2.3.4">
+			<label for="severity">Severity</label>
+			<select id="severity" name="severity">
+				<option value="">All</option>
+				<option value="critical"{{if eq .SeverityFilter "critical"}} selected{{end}}>Critical</option>
+				<option value="high"{{if eq .SeverityFilter "high"}} selected{{end}}>High</option>
+				<option value="medium"{{if eq .SeverityFilter "medium"}} selected{{end}}>Medium</option>
+				<option value="low"{{if eq .SeverityFilter "low"}} selected{{end}}>Low</option>
+			</select>
+			<button type="submit">Filter</button>
+			{{- if or .VersionFilter .SeverityFilter}} <a class="clear" href="?">Clear</a>{{end}}
+		</form>
+		<dl class="params">
+			<dt><code>v</code></dt>
+			<dd>Filter advisories affecting a specific version (semver, e.g. <code>2.3.4</code>). Checks whether the version falls within each advisory's vulnerable version range.</dd>
+			<dt><code>severity</code></dt>
+			<dd>Filter by severity level: <code>critical</code>, <code>high</code>, <code>medium</code>, or <code>low</code>.</dd>
+		</dl>
+	</div>
+	{{- range .Advisories}}
+	{{- $sev := deref .Severity}}
+	{{- $root := $}}
+	<details class="advisory">
+		<summary>
+			<div>
+				<h2 class="advisory-title"><a href="{{deref .HTMLURL}}">{{title .}}</a></h2>
+				{{- if $sev}}<div class="badges"><a class="badge badge-{{$sev}}" href="?severity={{$sev}}{{if $root.VersionFilter}}&v={{$root.VersionFilter}}{{end}}">{{$sev}}</a></div>{{end}}
+				<div class="meta">
+					{{- with deref .CVEID}}{{.}} &nbsp;·&nbsp; {{end -}}
+					{{- with published .PublishedAt}}Published {{.}}{{end -}}
+				</div>
+			</div>
+		</summary>
+		{{- if .Vulnerabilities}}
+		<div class="versions">
+			<table>
+				<thead><tr><th>Package</th><th>Vulnerable versions</th><th>Patched version</th></tr></thead>
+				<tbody>
+				{{- range .Vulnerabilities}}
+				<tr>
+					<td>{{with .Package}}{{.GetEcosystem}}: {{.GetName}}{{end}}</td>
+					<td>{{.GetVulnerableVersionRange}}</td>
+					<td>{{range $i, $v := splitVersions .GetPatchedVersions}}{{if $i}}, {{end}}<a href="?v={{$v}}{{if $root.SeverityFilter}}&severity={{$root.SeverityFilter}}{{end}}">{{$v}}</a>{{end}}</td>
+				</tr>
+				{{- end}}
+				</tbody>
+			</table>
+		</div>
+		{{- end}}
+		{{- with deref .Description}}<div class="description">{{markdown .}}</div>{{end}}
+	</details>
+	{{- else}}
+	<p class="empty">No published security advisories.</p>
+	{{- end}}
+</body>
+</html>
