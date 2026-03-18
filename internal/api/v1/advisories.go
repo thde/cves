@@ -30,6 +30,9 @@ import (
 //go:embed static
 var staticFiles embed.FS
 
+// severities is the ordered list of all valid severity levels.
+var severities = []string{"critical", "high", "medium", "low"}
+
 var availableMediaTypes = []contenttype.MediaType{
 	contenttype.NewMediaType("application/rss+xml"),
 	contenttype.NewMediaType("text/html"),
@@ -150,12 +153,10 @@ func (s *API) handleFeed(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	severityFilter := r.URL.Query().Get("severity")
-	if severityFilter != "" {
-		switch severityFilter {
-		case "critical", "high", "medium", "low":
-		default:
-			http.Error(w, "invalid severity: must be one of critical, high, medium, low", http.StatusBadRequest)
+	severityFilter := r.URL.Query()["severity"]
+	for _, sf := range severityFilter {
+		if !slices.Contains(severities, sf) {
+			http.Error(w, fmt.Sprintf("invalid severity: must be one of %s", strings.Join(severities, ", ")), http.StatusBadRequest)
 			return
 		}
 	}
@@ -210,7 +211,7 @@ func (s *API) handleFeed(w http.ResponseWriter, r *http.Request) {
 	if versionFilter != nil {
 		seq = s.filterByVersion(seq, versionFilter)
 	}
-	if severityFilter != "" {
+	if len(severityFilter) > 0 {
 		seq = filterBySeverity(seq, severityFilter)
 	}
 
@@ -263,11 +264,15 @@ func (s *API) filterByVersion(seq iter.Seq[*github.SecurityAdvisory], v *semver.
 	}
 }
 
-// filterBySeverity returns an iterator over advisories matching the given severity.
-func filterBySeverity(seq iter.Seq[*github.SecurityAdvisory], severity string) iter.Seq[*github.SecurityAdvisory] {
+// filterBySeverity returns an iterator over advisories whose severity matches any of the given values.
+func filterBySeverity(seq iter.Seq[*github.SecurityAdvisory], severities []string) iter.Seq[*github.SecurityAdvisory] {
+	set := make(map[string]bool, len(severities))
+	for _, s := range severities {
+		set[s] = true
+	}
 	return func(yield func(*github.SecurityAdvisory) bool) {
 		for adv := range seq {
-			if adv.GetSeverity() == severity {
+			if set[adv.GetSeverity()] {
 				if !yield(adv) {
 					return
 				}
@@ -308,20 +313,21 @@ func (s *API) renderRSS(w http.ResponseWriter, r *http.Request, owner, repo stri
 }
 
 // renderHTML writes the advisories as an HTML page.
-func (s *API) renderHTML(w http.ResponseWriter, r *http.Request, owner, repo string, advisories iter.Seq[*github.SecurityAdvisory], versionFilter *semver.Version, severityFilter string) {
+func (s *API) renderHTML(w http.ResponseWriter, r *http.Request, owner, repo string, advisories iter.Seq[*github.SecurityAdvisory], versionFilter *semver.Version, severityFilter []string) {
 	type data struct {
 		Owner          string
 		Repo           string
 		Advisories     iter.Seq[*github.SecurityAdvisory]
+		Severities     []string
 		VersionFilter  string
-		SeverityFilter string
+		SeverityFilter []string
 	}
 	var versionStr string
 	if versionFilter != nil {
 		versionStr = versionFilter.Original()
 	}
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
-	if err := s.tpl.Execute(w, data{Owner: owner, Repo: repo, Advisories: advisories, VersionFilter: versionStr, SeverityFilter: severityFilter}); err != nil {
+	if err := s.tpl.Execute(w, data{Owner: owner, Repo: repo, Advisories: advisories, Severities: severities, VersionFilter: versionStr, SeverityFilter: severityFilter}); err != nil {
 		s.logger.ErrorContext(r.Context(), "render html", "owner", owner, "repo", repo, "err", err)
 	}
 }
@@ -371,6 +377,15 @@ func loadTemplate(staticFS fs.FS) (*template.Template, error) {
 				}
 			}
 			return versions
+		},
+		"hasSeverity": func(filters []string, s string) bool {
+			return slices.Contains(filters, s)
+		},
+		"capitalize": func(s string) string {
+			if s == "" {
+				return ""
+			}
+			return strings.ToUpper(s[:1]) + s[1:]
 		},
 		"markdown": func(s string) template.HTML {
 			var buf bytes.Buffer
