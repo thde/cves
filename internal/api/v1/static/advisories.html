@@ -48,6 +48,32 @@
 		.params { font-size: 0.8rem; color: #656d76; }
 		.params dt { font-weight: 600; color: #1a1a1a; margin-top: 0.4rem; }
 		.params dd { margin: 0 0 0 1rem; }
+		@media (prefers-color-scheme: dark) {
+			body { color: #e6e6e6; background: #0d1117; }
+			h1 a { color: #e6e6e6; }
+			details.advisory { border-color: #30363d; }
+			summary::after { color: #8b949e; }
+			.advisory-title a { color: #58a6ff; }
+			.badge-critical { background: #67060c; color: #ffa8a8; }
+			.badge-high     { background: #4d1f00; color: #ffb380; }
+			.badge-medium   { background: #3d2a00; color: #ffd27d; }
+			.badge-low      { background: #0d2b12; color: #7ee787; }
+			.badge-unknown  { background: #21262d; color: #8b949e; }
+			.meta { color: #8b949e; }
+			.versions th { color: #8b949e; border-bottom-color: #30363d; }
+			.versions td { color: #8b949e; border-bottom-color: #21262d; }
+			.versions td:first-child { color: #e6e6e6; }
+			.description { color: #b0b8c1; }
+			.description pre, .description code { background: #161b22; color: #e6e6e6; }
+			.empty { color: #8b949e; }
+			.filters input, .filters select { background: #0d1117; color: #e6e6e6; border-color: #30363d; }
+			.filters button { background: #21262d; color: #e6e6e6; border-color: #30363d; }
+			.filters button:hover { background: #30363d; }
+			.filters a.clear { color: #8b949e; }
+			.params { color: #8b949e; }
+			.params dt { color: #e6e6e6; }
+			a { color: #58a6ff; }
+		}
 	</style>
 </head>
 <body>
