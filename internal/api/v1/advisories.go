@@ -153,7 +153,7 @@ func (s *API) handleFeed(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	severityFilter := r.URL.Query()["severity"]
+	severityFilter := slices.DeleteFunc(r.URL.Query()["severity"], func(s string) bool { return s == "" })
 	for _, sf := range severityFilter {
 		if !slices.Contains(severities, sf) {
 			http.Error(w, fmt.Sprintf("invalid severity: must be one of %s", strings.Join(severities, ", ")), http.StatusBadRequest)
