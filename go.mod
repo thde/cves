@@ -10,7 +10,7 @@ require (
 	github.com/go-chi/httplog/v2 v2.1.1
 	github.com/google/go-github/v70 v70.0.0
 	github.com/gorilla/feeds v1.2.0
-	github.com/klauspost/compress v1.18.4
+	github.com/klauspost/compress v1.18.5
 	github.com/yuin/goldmark v1.7.16
 )
 
