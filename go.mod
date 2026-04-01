@@ -11,7 +11,7 @@ require (
 	github.com/google/go-github/v70 v70.0.0
 	github.com/gorilla/feeds v1.2.0
 	github.com/klauspost/compress v1.18.4
-	github.com/yuin/goldmark v1.7.16
+	github.com/yuin/goldmark v1.8.2
 )
 
 require (
