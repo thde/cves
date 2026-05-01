@@ -3,7 +3,7 @@ module github.com/thde/cves
 go 1.26.1
 
 require (
-	github.com/Masterminds/semver/v3 v3.4.0
+	github.com/Masterminds/semver/v3 v3.5.0
 	github.com/dgraph-io/badger/v4 v4.9.1
 	github.com/elnormous/contenttype v1.0.4
 	github.com/go-chi/chi/v5 v5.2.5
